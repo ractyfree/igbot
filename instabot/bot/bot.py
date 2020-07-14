@@ -535,6 +535,9 @@ class Bot(object):
     def get_self_story_viewers(self, story_id):
         return get_self_story_viewers(self, story_id)
 
+    def get_activity_users(self):
+        return get_activity_users(self)
+
     def get_pending_follow_requests(self):
         return get_pending_follow_requests(self)
 

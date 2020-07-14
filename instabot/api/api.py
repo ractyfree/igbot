@@ -509,13 +509,17 @@ class API(object):
         with_signature=True,
         headers=None,
         extra_sig=None,
-        timeout_minutes=None,
+            timeout_minutes=None,
+            base_url=config.API_URL,
+            default_headers=True
     ):
         self.set_proxy()  # Only happens if `self.proxy`
-        # TODO: fix the request_headers
         self.session.headers.update(config.REQUEST_HEADERS)
+        if not default_headers:  # because self.session.headers after previous interactions with this function is becoming filled with headers which are incompatible with basic request to www.instagram.com
+            for x in config.REQUEST_HEADERS.keys():  # that's why we basically delete here all non-compatible headers
+                del self.session.headers[x]
+
         self.session.headers.update({"User-Agent": self.user_agent})
-        # print("printing headers", self.session.headers)
         if not self.is_logged_in and not login:
             msg = "Not logged in!"
             self.logger.critical(msg)
@@ -1584,6 +1588,24 @@ class API(object):
     def get_profile_data(self):
         data = self.json_data()
         return self.send_request("accounts/current_user/?edit=true", data)
+
+    def get_activity_users(self):
+        url = "accounts/activity/?__a=1&include_reel=true"
+        headers = {
+            "cookie": f"csrftoken={self.token};",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "en-US,en;q=0.9,ru;q=0.8",
+            "pragma": "no-cache",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "none",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36"
+        }
+
+        return self.send_request(url, base_url="https://www.instagram.com/", headers=headers, default_headers=False)
 
     def edit_profile(self, url, phone, first_name, biography, email, gender):
         data = self.json_data(

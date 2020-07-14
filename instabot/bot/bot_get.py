@@ -28,6 +28,12 @@ def get_user_stories(self, user_id):
         self.logger.error(str(e))
         return [], []
 
+def get_activity_users(self):
+    self.api.get_activity_users()
+    if "graphql" not in self.api.last_json:
+        self.logger.info(f"Invalid json from get_activity_users: {self.api.last_json}")
+    users = [x.get("node").get("user") for x in self.api.last_json.get("graphql").get("user").get("activity_feed").get("edge_web_activity_feed").get("edges")]
+    return users
 
 def get_self_story_viewers(self, story_id):
     self.api.get_self_story_viewers(story_id)
